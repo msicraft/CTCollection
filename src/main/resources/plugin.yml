@@ -1,0 +1,7 @@
+name: CTCollection
+version: '${project.version}'
+main: me.msicraft.ctcollection.CTCollection
+api-version: '1.20'
+commands:
+  도감:
+    description: main command
