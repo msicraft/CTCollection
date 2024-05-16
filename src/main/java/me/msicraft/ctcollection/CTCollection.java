@@ -1,9 +1,11 @@
 package me.msicraft.ctcollection;
 
 import me.msicraft.ctcollection.Command.MainCommand;
-import me.msicraft.ctcollection.Event.CollectionMenuEvent;
-import me.msicraft.ctcollection.Event.PlayerRelatedEvent;
-import me.msicraft.ctcollection.Manager.CollectionManager;
+import me.msicraft.ctcollection.ItemCollection.Event.CollectionMenuEvent;
+import me.msicraft.ctcollection.ItemCollection.Event.PlayerRelatedEvent;
+import me.msicraft.ctcollection.ItemCollection.Manager.CollectionManager;
+import me.msicraft.ctcollection.Reward.DataFile.RewardDataFile;
+import me.msicraft.ctcollection.Reward.Manager.RewardManager;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -25,12 +27,18 @@ public final class CTCollection extends JavaPlugin {
 
     private CollectionManager collectionManager;
 
+    private RewardManager rewardManager;
+    private RewardDataFile rewardDataFile;
+
     @Override
     public void onEnable() {
         plugin = this;
         createConfigFiles();
 
+        rewardDataFile = new RewardDataFile(this);
+
         collectionManager = new CollectionManager(this);
+        rewardManager = new RewardManager(this);
 
         eventRegister();
         commandRegister();
@@ -73,6 +81,14 @@ public final class CTCollection extends JavaPlugin {
 
     public CollectionManager getCollectionManager() {
         return collectionManager;
+    }
+
+    public RewardManager getRewardManager() {
+        return rewardManager;
+    }
+
+    public RewardDataFile getRewardDataFile() {
+        return rewardDataFile;
     }
 
 }

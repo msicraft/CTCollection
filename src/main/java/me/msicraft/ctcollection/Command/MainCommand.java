@@ -1,7 +1,7 @@
 package me.msicraft.ctcollection.Command;
 
 import me.msicraft.ctcollection.CTCollection;
-import me.msicraft.ctcollection.Menu.CollectionInventory;
+import me.msicraft.ctcollection.ItemCollection.Menu.CollectionInventory;
 import me.msicraft.ctcore.aCommon.Pair;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

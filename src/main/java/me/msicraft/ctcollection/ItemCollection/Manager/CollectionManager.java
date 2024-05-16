@@ -1,8 +1,8 @@
-package me.msicraft.ctcollection.Manager;
+package me.msicraft.ctcollection.ItemCollection.Manager;
 
 import me.msicraft.ctcollection.CTCollection;
-import me.msicraft.ctcollection.Menu.CollectionInventory;
-import me.msicraft.ctcollection.aCommon.Collection;
+import me.msicraft.ctcollection.ItemCollection.Menu.CollectionInventory;
+import me.msicraft.ctcollection.ItemCollection.Collection;
 import me.msicraft.ctcore.aCommon.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,9 +17,11 @@ public class CollectionManager {
 
     private final CTCollection plugin;
 
-    private final Map<Integer, Collection> registeredCollectionsMap = new HashMap<>();
+    private final Map<Material, Collection> registeredCollectionsMap = new LinkedHashMap<>();
 
     private final Map<UUID, Pair<CollectionInventory, Inventory>> cachedInventoryMap = new HashMap<>();
+
+    private int registeredSize = 0;
 
     public CollectionManager(CTCollection plugin) {
         this.plugin = plugin;
@@ -38,8 +40,8 @@ public class CollectionManager {
                 Material material = Material.getMaterial(a[0].toUpperCase());
                 if (material != null) {
                     int amount = Integer.parseInt(a[1]);
-                    Collection collection = new Collection(count, material, amount);
-                    registeredCollectionsMap.put(count, collection);
+                    Collection collection = new Collection(material, amount);
+                    registeredCollectionsMap.put(material, collection);
                     count++;
                 } else {
                     Bukkit.getConsoleSender().sendMessage(CTCollection.PREFIX + ChatColor.RED + " Invalid Material Name: " + format);
@@ -51,26 +53,19 @@ public class CollectionManager {
         Bukkit.getConsoleSender().sendMessage(CTCollection.PREFIX + ChatColor.GREEN + " Registered "
                 + ChatColor.GOLD + count
                 + ChatColor.GREEN + " Collections");
+        registeredSize = count;
     }
 
-    public Set<Integer> getCollectionIds() {
-        return registeredCollectionsMap.keySet();
+    public List<Material> getCollectionMaterials() {
+        return List.copyOf(registeredCollectionsMap.keySet());
     }
 
-    public Set<Material> getCollectionMaterials() {
-        Set<Material> materials = new HashSet<>();
-        for (Collection collection : registeredCollectionsMap.values()) {
-            materials.add(collection.getMaterial());
-        }
-        return materials;
+    public boolean hasCollection(Material material) {
+        return registeredCollectionsMap.containsKey(material);
     }
 
-    public boolean hasCollection(int id) {
-        return registeredCollectionsMap.containsKey(id);
-    }
-
-    public Collection getCollection(int id) {
-        return registeredCollectionsMap.getOrDefault(id, null);
+    public Collection getCollection(Material material) {
+        return registeredCollectionsMap.getOrDefault(material, null);
     }
 
     public void setCachedInventory(Player player, Pair<CollectionInventory, Inventory> pair) {
@@ -97,5 +92,8 @@ public class CollectionManager {
         cachedInventoryMap.remove(uuid);
     }
 
+    public int getRegisteredSize() {
+        return registeredSize;
+    }
 
 }

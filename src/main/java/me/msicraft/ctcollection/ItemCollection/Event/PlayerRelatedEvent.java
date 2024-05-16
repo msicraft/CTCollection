@@ -1,8 +1,8 @@
-package me.msicraft.ctcollection.Event;
+package me.msicraft.ctcollection.ItemCollection.Event;
 
 import me.msicraft.ctcollection.CTCollection;
-import me.msicraft.ctcollection.Manager.CollectionManager;
-import me.msicraft.ctcollection.Menu.CollectionInventory;
+import me.msicraft.ctcollection.ItemCollection.Manager.CollectionManager;
+import me.msicraft.ctcollection.ItemCollection.Menu.CollectionInventory;
 import me.msicraft.ctcore.Utils.Base64Util;
 import me.msicraft.ctcore.aCommon.Pair;
 import me.msicraft.ctplayerdata.PlayerData.CustomEvent.PlayerDataLoadEvent;
@@ -15,7 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
-import java.util.Set;
+import java.util.List;
 
 public class PlayerRelatedEvent implements Listener {
 
@@ -30,7 +30,7 @@ public class PlayerRelatedEvent implements Listener {
         Player player = e.getPlayer();
 
         PlayerData playerData = e.getPlayerData();
-        playerData.loadTagData("CTCollection.CollectionInfo");
+        playerData.loadTagData("CTCollection");
 
         Pair<CollectionInventory, Inventory> pair = plugin.getCollectionManager().getCachedInventory(player);
         CollectionInventory collectionInventory;
@@ -44,7 +44,7 @@ public class PlayerRelatedEvent implements Listener {
 
         CollectionManager collectionManager = plugin.getCollectionManager();
 
-        Set<Material> registeredMaterials = collectionManager.getCollectionMaterials();
+        List<Material> registeredMaterials = collectionManager.getCollectionMaterials();
         for (Material material : registeredMaterials) {
             collectionInventory.setCollectionInfo(material, new Pair<>(false, 0));
         }

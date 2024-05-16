@@ -1,14 +1,17 @@
-package me.msicraft.ctcollection.Menu;
+package me.msicraft.ctcollection.ItemCollection.Menu;
 
 import me.msicraft.ctcollection.CTCollection;
-import me.msicraft.ctcollection.Manager.CollectionManager;
-import me.msicraft.ctcollection.aCommon.Collection;
+import me.msicraft.ctcollection.ItemCollection.Manager.CollectionManager;
+import me.msicraft.ctcollection.ItemCollection.Collection;
 import me.msicraft.ctcore.Utils.Base64Util;
 import me.msicraft.ctcore.Utils.GuiUtil;
 import me.msicraft.ctcore.aCommon.Pair;
 import me.msicraft.ctplayerdata.CTPlayerData;
 import me.msicraft.ctplayerdata.PlayerData.PlayerData;
 import me.msicraft.ctplayerdata.PlayerData.aCommon.TagData;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -17,8 +20,8 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CollectionInventory implements InventoryHolder {
 
@@ -32,19 +35,17 @@ public class CollectionInventory implements InventoryHolder {
     private int pageCount = 0;
 
     public CollectionInventory(CTCollection plugin, Player player) {
-        CollectionManager collectionManager = plugin.getCollectionManager();
-
         this.player = player;
         this.plugin = plugin;
-        Pair<CollectionInventory, Inventory> pair = collectionManager.getCachedInventory(player);
-        this.inventory = pair.getV2();
+        this.inventory = Bukkit.createInventory(this, 54, Component.text(""));
     }
 
     public void updateCollection() {
+        completeCount = 0;
         CollectionManager collectionManager = plugin.getCollectionManager();
-        Set<Integer> ids = collectionManager.getCollectionIds();
-        for (int i : ids) {
-            Collection collection = collectionManager.getCollection(i);
+        List<Material> materials = collectionManager.getCollectionMaterials();
+        for (Material material : materials) {
+            Collection collection = collectionManager.getCollection(material);
             int amount = collection.getAmount();
             if (collectionInfoMap.containsKey(collection.getMaterial())) {
                 Pair<Boolean, Integer> pair = collectionInfoMap.get(collection.getMaterial());
@@ -64,7 +65,7 @@ public class CollectionInventory implements InventoryHolder {
         PlayerData playerData = CTPlayerData.getPlugin().getPlayerDataManager().getPlayerData(player);
         TagData tagData = playerData.getTagData("CollectionInfo");
         if (tagData == null) {
-            tagData = new TagData("CTCollection.CollectionInfo", "");
+            tagData = new TagData("CTCollection", "");
         }
         tagData.setValue(getCollectionCountEncodeData());
 
@@ -90,32 +91,32 @@ public class CollectionInventory implements InventoryHolder {
         player.openInventory(inventory);
         inventory.clear();
 
-        setUp(CTPlayerData.getPlugin().getPlayerDataManager().getPlayerData(player));
+        setUp();
 
         player.updateInventory();
     }
 
-    private void setUp(PlayerData playerData) {
+    private void setUp() {
         String key = "CT_Collection_Menu";
         CollectionManager collectionManager = plugin.getCollectionManager();
         ItemStack itemStack = null;
-        int maxSize = collectionManager.getCollectionIds().size();
+        List<Material> collectionMaterials = collectionManager.getCollectionMaterials();
+        int maxSize = collectionManager.getRegisteredSize();
         int maxPageSize = maxSize / 45;
         int guiCount = 0;
         int lastCount = pageCount * 45;
         for (int i = lastCount; i < maxSize; i++) {
-            if (collectionManager.hasCollection(i)) {
-                Collection collection = collectionManager.getCollection(i);
-                Pair<Boolean, Integer> pair = collectionInfoMap.get(collection.getMaterial());
-                /*
-                TagData tagData = playerData.getTagData("CollectionInfo");
-                boolean isComplete = false;
-                if (tagData != null) {
-                    isComplete = (boolean) tagData.getValue();
+            Material material = collectionMaterials.get(i);
+            Collection collection = collectionManager.getCollection(material);
+            if (collection != null) {
+                Pair<Boolean, Integer> pair = collectionInfoMap.get(material);
+                boolean isComplete = pair.getV1();
+                if (isComplete) {
+                    itemStack = collection.getCompleteStack();
+                } else {
+                    itemStack = collection.getCollectionStack(pair.getV2());
                 }
-                itemStack = collection.getCollectionStack(isComplete);
 
-                 */
                 this.inventory.setItem(guiCount, itemStack);
                 guiCount++;
             }
@@ -126,10 +127,18 @@ public class CollectionInventory implements InventoryHolder {
         String pageS = "페이지: " + (pageCount + 1) + "/" + (maxPageSize + 1);
         itemStack = GuiUtil.createItemStack(plugin, Material.BOOK, pageS, GuiUtil.EMPTY_LORE, -1, key, "page");
         inventory.setItem(49, itemStack);
-        itemStack = GuiUtil.createItemStack(plugin, Material.ARROW, "다음 페이지", GuiUtil.EMPTY_LORE, -1, key, "next");
+        itemStack = GuiUtil.createItemStack(plugin, Material.ARROW, ChatColor.AQUA + "다음 페이지-> (" + (pageCount + 2) + ")", GuiUtil.EMPTY_LORE,
+                -1, key, "next");
         inventory.setItem(50, itemStack);
-        itemStack = GuiUtil.createItemStack(plugin, Material.ARROW, "이전 페이지", GuiUtil.EMPTY_LORE, -1, key, "previous");
+        itemStack = GuiUtil.createItemStack(plugin, Material.ARROW, ChatColor.AQUA + "(" + (pageCount - 2) + ") <-이전 페이지", GuiUtil.EMPTY_LORE,
+                -1, key, "previous");
         inventory.setItem(48, itemStack);
+        itemStack = GuiUtil.createItemStack(plugin, Material.PAPER,  ChatColor.AQUA + "수집 완료된 도감 수: " + completeCount, GuiUtil.EMPTY_LORE,
+                -1, key, "none");
+        inventory.setItem(45, itemStack);
+        itemStack = GuiUtil.createItemStack(plugin, Material.PAPER, ChatColor.AQUA + "보상 받기", GuiUtil.EMPTY_LORE,
+                -1, key, "reward");
+        inventory.setItem(46, itemStack);
     }
 
     public int getPageCount() {
@@ -144,6 +153,7 @@ public class CollectionInventory implements InventoryHolder {
         return completeCount;
     }
 
+    @NotNull
     public Pair<Boolean, Integer> getCollectionInfo(Material material) {
         return collectionInfoMap.get(material);
     }
