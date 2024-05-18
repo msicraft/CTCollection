@@ -24,7 +24,7 @@ public class MainCommand implements CommandExecutor {
             if (sender instanceof Player player) {
                 Pair<CollectionInventory, Inventory> pair = plugin.getCollectionManager().getCachedInventory(player);
                 CollectionInventory collectionInventory = pair.getV1();
-                collectionInventory.open(player);
+                collectionInventory.open(player, CollectionInventory.Type.MAIN);
                 return true;
             }
         }

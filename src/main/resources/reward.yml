@@ -1,0 +1,33 @@
+Reward:
+  "10":
+    List: #Format: <Bags-InternalName>
+      - test
+  "20":
+    List:
+      - test
+      - test
+
+Bags:
+  #<internalName>:
+    #MinAmount: 1
+    #MaxAmount: 1
+    #List: #Format: <Item-InternalName>:<weight>
+  test:
+    MinAmount: 1
+    MaxAmount: 1
+    List:
+      - Money:15
+      - Money:20
+      - Money2:5
+      - Money2:10
+
+
+Items: #Type = [MONEY, ITEMSTACK]
+  Money:
+    Type: MONEY
+    MinAmount: 100
+    MaxAmount: 100
+  Money2:
+    Type: MONEY
+    MinAmount: 100
+    MaxAmount: 1000

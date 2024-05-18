@@ -1,9 +1,11 @@
 package me.msicraft.ctcollection.ItemCollection.Event;
 
 import me.msicraft.ctcollection.CTCollection;
+import me.msicraft.ctcollection.ItemCollection.Collection;
 import me.msicraft.ctcollection.ItemCollection.Manager.CollectionManager;
 import me.msicraft.ctcollection.ItemCollection.Menu.CollectionInventory;
-import me.msicraft.ctcollection.ItemCollection.Collection;
+import me.msicraft.ctcollection.Reward.Manager.RewardManager;
+import me.msicraft.ctcollection.Reward.Reward;
 import me.msicraft.ctcore.aCommon.Pair;
 import me.msicraft.ctplayerdata.CTPlayerData;
 import me.msicraft.ctplayerdata.PlayerData.PlayerData;
@@ -82,7 +84,7 @@ public class CollectionMenuEvent implements Listener {
                                 next = 0;
                             }
                             collectionInventory.setPageCount(next);
-                            collectionInventory.open(player);
+                            collectionInventory.open(player, CollectionInventory.Type.MAIN);
                         }
                         case "previous" -> {
                             int previous = current - 1;
@@ -90,7 +92,10 @@ public class CollectionMenuEvent implements Listener {
                                 previous = maxPage;
                             }
                             collectionInventory.setPageCount(previous);
-                            collectionInventory.open(player);
+                            collectionInventory.open(player, CollectionInventory.Type.MAIN);
+                        }
+                        case "reward" -> {
+                            collectionInventory.open(player, CollectionInventory.Type.REWARD);
                         }
                     }
                 }
@@ -151,7 +156,61 @@ public class CollectionMenuEvent implements Listener {
                         collectionInventory.setCollectionInfo(material, pair);
                         collectionInventory.updateCollection();
 
-                        collectionInventory.open(player);
+                        collectionInventory.open(player, CollectionInventory.Type.MAIN);
+                    }
+                }
+            } else if (dataContainer.has(new NamespacedKey(plugin, "CT_Collection_Reward"), PersistentDataType.STRING)) {
+                String data = dataContainer.get(new NamespacedKey(plugin, "CT_Collection_Reward"), PersistentDataType.STRING);
+                if (data != null) {
+                    if (data.equals("none")) {
+                        player.sendMessage(Component.text(ChatColor.RED + "이미 수령한 보상입니다."));
+                        return;
+                    }
+                    RewardManager rewardManager = plugin.getRewardManager();
+                    int count = Integer.parseInt(data);
+                    if (collectionInventory.getCompleteCount() >= count) {
+                        Reward reward = rewardManager.getReward(count);
+                        if (reward != null) {
+                            reward.giveRewardToPlayer(player);
+                            player.sendMessage(Component.text(ChatColor.GREEN + "수집 보상이 지급되었습니다."));
+
+                            collectionInventory.setRewardReceived(count, true);
+                            collectionInventory.updateRewardInfo();
+
+                            collectionInventory.open(player, CollectionInventory.Type.REWARD);
+                        } else {
+                            player.sendMessage(Component.text(ChatColor.RED + "알수없는 오류가 발생했습니다. 다시 한 번 시도해주세요"));
+                        }
+                    } else {
+                        player.sendMessage(Component.text(ChatColor.RED + "아직 해당 보상을 수령할 수 없습니다"));
+                    }
+                }
+            } else if (dataContainer.has(new NamespacedKey(plugin, "CT_Collection_Reward_Button"), PersistentDataType.STRING)) {
+                String data = dataContainer.get(new NamespacedKey(plugin, "CT_Collection_Reward_Button"), PersistentDataType.STRING);
+                if (data != null) {
+                    RewardManager rewardManager = plugin.getRewardManager();
+                    int maxPage = rewardManager.getRewardSize() / 45;
+                    int current = collectionInventory.getRewardPageCount();
+                    switch (data) {
+                        case "next" -> {
+                            int next = current + 1;
+                            if (next > maxPage) {
+                                next = 0;
+                            }
+                            collectionInventory.setRewardPageCount(next);
+                            collectionInventory.open(player, CollectionInventory.Type.REWARD);
+                        }
+                        case "previous" -> {
+                            int previous = current - 1;
+                            if (previous < 0) {
+                                previous = maxPage;
+                            }
+                            collectionInventory.setRewardPageCount(previous);
+                            collectionInventory.open(player, CollectionInventory.Type.REWARD);
+                        }
+                        case "return" -> {
+                            collectionInventory.open(player, CollectionInventory.Type.MAIN);
+                        }
                     }
                 }
             }

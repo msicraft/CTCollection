@@ -1,8 +1,8 @@
 package me.msicraft.ctcollection.ItemCollection.Manager;
 
 import me.msicraft.ctcollection.CTCollection;
-import me.msicraft.ctcollection.ItemCollection.Menu.CollectionInventory;
 import me.msicraft.ctcollection.ItemCollection.Collection;
+import me.msicraft.ctcollection.ItemCollection.Menu.CollectionInventory;
 import me.msicraft.ctcore.aCommon.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

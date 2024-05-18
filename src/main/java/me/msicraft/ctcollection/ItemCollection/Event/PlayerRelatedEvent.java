@@ -51,22 +51,43 @@ public class PlayerRelatedEvent implements Listener {
 
         TagData tagData = playerData.getTagData("CollectionInfo");
         if (tagData != null) {
-            byte[] bytes = Base64Util.stringToByteArray((String) tagData.getValue());
-            String decodeS = new String(bytes);
-            String[] a = decodeS.split(":");
-            for (String s : a) {
-                String[] b = s.split("=");
-                Material material = Material.getMaterial(b[0].toUpperCase());
-                if (material != null && registeredMaterials.contains(material)) {
-                    Pair<Boolean, Integer> p = collectionInventory.getCollectionInfo(material);
-                    p.setV1(Boolean.parseBoolean(b[1]));
-                    p.setV2(Integer.parseInt(b[2]));
-                    collectionInventory.setCollectionInfo(material, p);
+            String v = (String) tagData.getValue();
+            if (!v.isEmpty()) {
+                byte[] bytes = Base64Util.stringToByteArray(v);
+                String decodeS = new String(bytes);
+                String[] a = decodeS.split(":");
+                for (String s : a) {
+                    String[] b = s.split("=");
+                    Material material = Material.getMaterial(b[0].toUpperCase());
+                    if (material != null && registeredMaterials.contains(material)) {
+                        Pair<Boolean, Integer> p = collectionInventory.getCollectionInfo(material);
+                        p.setV1(Boolean.parseBoolean(b[1]));
+                        p.setV2(Integer.parseInt(b[2]));
+                        collectionInventory.setCollectionInfo(material, p);
+                    }
                 }
             }
         }
 
         collectionInventory.updateCollection();
+
+        TagData rewardTagData = playerData.getTagData("RewardInfo");
+        if (rewardTagData != null) {
+            String v = (String) rewardTagData.getValue();
+            if (!v.isEmpty()) {
+                byte[] bytes = Base64Util.stringToByteArray(v);
+                String decodeS = new String(bytes);
+                String[] a = decodeS.split(":");
+                for (String s : a) {
+                    String[] b = s.split("=");
+                    int count = Integer.parseInt(b[0]);
+                    boolean check = Boolean.parseBoolean(b[1]);
+                    collectionInventory.setRewardReceived(count, check);
+                }
+            }
+        }
+
+        collectionInventory.updateRewardInfo();
     }
 
     @EventHandler
